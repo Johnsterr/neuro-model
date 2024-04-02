@@ -1,2 +1,6 @@
 @import "normalize-scss";
 @include normalize();
+
+td {
+    padding: 4px 8px;
+}

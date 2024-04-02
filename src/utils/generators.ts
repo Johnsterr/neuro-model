@@ -30,3 +30,20 @@ export function startedWeightsAndConstants() {
 
     console.log(ar);
 }
+
+export function startedWeightsAndConstants2() {
+    const ar = [];
+    for (let i = 0; i < 100; i++) {
+        ar.push({
+            w13: Number(Math.random().toFixed(2)),
+            w23: Number(Math.random().toFixed(2)),
+            b: 0,
+        });
+    }
+
+    for (let i = 0; i < ar.length; i++) {
+        ar[i].b = Number(Math.random().toFixed(2));
+    }
+
+    console.log(ar);
+}

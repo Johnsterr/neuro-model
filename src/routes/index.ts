@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory, type Router, RouteRecordRaw } from "vue-router";
-import Main from "@/components/Main.vue";
-import Signals from "@/components/Signals.vue";
-import NotFound from "@/components/NotFound.vue";
+import Main from "@/views/Main.vue";
+import GradientDescent from "@/views/GradientDescent.vue";
+import NotFound from "@/views/NotFound.vue";
 
 export const routes: RouteRecordRaw[] = [
     {
@@ -9,11 +9,11 @@ export const routes: RouteRecordRaw[] = [
         name: "Main",
         component: Main,
     },
-    // {
-    //     path: "/signals",
-    //     name: "Signals",
-    //     component: Signals,
-    // },
+    {
+        path: "/gradients",
+        name: "Gradients",
+        component: GradientDescent,
+    },
     {
         path: "/:path(.*)",
         name: "NotFound",

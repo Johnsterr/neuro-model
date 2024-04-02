@@ -2,7 +2,12 @@ import { ref } from "vue";
 import { defineStore } from "pinia";
 import { sourceWeightGenerator } from "../utils/generators";
 import { calculateC1, maxValue, minValue, SignalKey } from "../utils/functions";
-import { startedWeightsAndConstants1, startedWeightsAndConstants2 } from "@/utils/data";
+import {
+    startedData,
+    startedWeightsAndConstants1,
+    startedWeightsAndConstants2,
+    startedWeightsAndConstants3,
+} from "@/utils/data";
 
 export type Signal = {
     c0: number;
@@ -11,20 +16,26 @@ export type Signal = {
     c1Normalize: number;
 };
 
-function normalizeC(item: Signal, key: SignalKey, cMin: number, cMax: number) {
-    return (item[key] - cMin) / (cMax - cMin);
-}
-
-function init(): {
-    c0: number;
-    c1: number;
-    c0Normalize: number;
-    c1Normalize: number;
+export type Activation = {
     x1: number;
     x2: number;
     y1: number;
     y2: number;
-}[] {
+};
+
+export type CalcC = {
+    c1calcNorm: number;
+    c1calc: number;
+};
+
+type SignalActs = Signal & Activation;
+type Dat = Signal & Activation & CalcC;
+
+function normalizeC(item: Signal, key: SignalKey, cMin: number, cMax: number) {
+    return (item[key] - cMin) / (cMax - cMin);
+}
+
+function init(): Dat[] {
     let signals = sourceWeightGenerator();
     signals = calculateC1(signals);
 
@@ -41,39 +52,38 @@ function init(): {
 
     const activations = calcFuncActivation(signals);
 
-    const result = signals.map((item, idx) => {
+    const signalActs: SignalActs[] = signals.map((item, idx) => {
         return {
             ...item,
             ...activations[idx],
         };
     });
 
+    const parametersC = calcC(signalActs, c1Min, c1Max);
+
+    const result: Dat[] = signalActs.map((item, idx) => {
+        return {
+            ...item,
+            ...parametersC[idx],
+        };
+    });
+
     return result;
 }
 
-function calcFuncActivation(signals: Signal[]) {
+function calcFuncActivation(signals: Signal[]): Activation[] {
     const ar = [];
 
     for (let i = 0; i < 100; i++) {
-        const obj: {
-            x1: number;
-            x2: number;
-            y1: number;
-            y2: number;
-        } = {
+        const obj: Activation = {
             x1: 0,
             x2: 0,
             y1: 0,
             y2: 0,
         };
 
-        obj.x1 =
-            startedWeightsAndConstants1[i].w * signals[i].c0Normalize +
-            startedWeightsAndConstants1[i].b;
-        obj.x2 =
-            startedWeightsAndConstants2[i].w * signals[i].c0Normalize +
-            startedWeightsAndConstants2[i].b;
-
+        obj.x1 = startedData.w1 * signals[i].c0Normalize + startedData.b1;
+        obj.x2 = startedData.w2 * signals[i].c0Normalize + startedData.b2;
         obj.y1 = Math.log(1 + Math.exp(obj.x1));
         obj.y2 = Math.log(1 + Math.exp(obj.x2));
 
@@ -83,19 +93,27 @@ function calcFuncActivation(signals: Signal[]) {
     return ar;
 }
 
+function calcC(signals: SignalActs[], c1Min: number, c1Max: number): CalcC[] {
+    const ar = [];
+
+    for (let i = 0; i < 100; i++) {
+        const obj: CalcC = {
+            c1calcNorm: 0,
+            c1calc: 0,
+        };
+
+        obj.c1calcNorm =
+            startedData.w13 * signals[i].y1 + startedData.w23 * signals[i].y2 + startedData.b3;
+        obj.c1calc = obj.c1calcNorm * (c1Max - c1Min) + c1Min;
+
+        ar.push(obj);
+    }
+
+    return ar;
+}
+
 export const useNeuroStore = defineStore("NeuroStore", () => {
-    const data = ref<
-        {
-            c0: number;
-            c1: number;
-            c0Normalize: number;
-            c1Normalize: number;
-            x1: number;
-            x2: number;
-            y1: number;
-            y2: number;
-        }[]
-    >(init());
+    const data = ref<Dat[]>(init());
 
     return { data };
 });

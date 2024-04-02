@@ -1,7 +1,7 @@
 <template>
     <header class="header">
         <RouterLink class="header__link" :to="{ name: 'Main' }">Main</RouterLink>
-        <!-- <RouterLink class="header__link" :to="{ name: 'Signals' }">Signals</RouterLink> -->
+        <RouterLink class="header__link" :to="{ name: 'Gradients' }">Gradients</RouterLink>
     </header>
 </template>
 
