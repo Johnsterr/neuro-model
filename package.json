@@ -1,0 +1,27 @@
+{
+    "name": "neuro",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "d3": "^7.9.0",
+        "normalize-scss": "^8.0.0",
+        "pinia": "^2.1.7",
+        "vue": "^3.4.21",
+        "vue-router": "^4.3.0"
+    },
+    "devDependencies": {
+        "@types/node": "^18.19.28",
+        "@vitejs/plugin-vue": "^5.0.4",
+        "sass": "^1.72.0",
+        "typescript": "^5.4.3",
+        "vite": "^5.1.6",
+        "vite-plugin-vue-devtools": "^7.0.18",
+        "vue-tsc": "^2.0.7"
+    }
+}
