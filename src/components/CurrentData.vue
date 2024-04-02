@@ -1,7 +1,7 @@
 <script setup lang="ts">
-// import { startedData } from "@/utils/data";
-// import { reactive } from "vue";
-// const data = reactive(startedData);
+import { currentData } from "@/utils/data";
+import { reactive } from "vue";
+const data = reactive(currentData);
 </script>
 
 <template>
@@ -21,13 +21,13 @@
             </thead>
             <tbody>
                 <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>{{ data.w1 }}</td>
+                    <td>{{ data.b1 }}</td>
+                    <td>{{ data.w2 }}</td>
+                    <td>{{ data.b2 }}</td>
+                    <td>{{ data.w13 }}</td>
+                    <td>{{ data.w23 }}</td>
+                    <td>{{ data.b3 }}</td>
                 </tr>
             </tbody>
         </table>

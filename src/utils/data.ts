@@ -8,6 +8,23 @@ export const startedData = {
     b3: 0.8,
 };
 
+export const currentData = {
+    w1: 0.35,
+    b1: 0.49,
+    w2: 0.43,
+    b2: 0.81,
+    w13: 0.35,
+    w23: 0.24,
+    b3: 0.8,
+};
+
+export const learningSteps = 100;
+
+export const learningData = {
+    lr: 0.003,
+    moment: 0.2,
+};
+
 export const startedWeightsAndConstants1 = [
     {
         w: 0.87,

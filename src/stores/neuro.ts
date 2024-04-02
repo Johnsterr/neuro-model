@@ -29,7 +29,7 @@ export type CalcC = {
 };
 
 type SignalActs = Signal & Activation;
-type Dat = Signal & Activation & CalcC;
+export type Dat = Signal & Activation & CalcC;
 
 function normalizeC(item: Signal, key: SignalKey, cMin: number, cMax: number) {
     return (item[key] - cMin) / (cMax - cMin);
@@ -102,8 +102,7 @@ function calcC(signals: SignalActs[], c1Min: number, c1Max: number): CalcC[] {
             c1calc: 0,
         };
 
-        obj.c1calcNorm =
-            startedData.w13 * signals[i].y1 + startedData.w23 * signals[i].y2 + startedData.b3;
+        obj.c1calcNorm = startedData.w13 * signals[i].y1 + startedData.w23 * signals[i].y2 + startedData.b3;
         obj.c1calc = obj.c1calcNorm * (c1Max - c1Min) + c1Min;
 
         ar.push(obj);
