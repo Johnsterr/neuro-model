@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { currentData } from "@/utils/data";
-import { reactive } from "vue";
-const data = reactive(currentData);
+import { computed } from "vue";
+import { useNeuroStore } from "@/stores/neuro";
+
+const neuroStore = useNeuroStore();
+const currentWeightsAndRatios = computed(() => neuroStore.currentWeightsAndRatios);
 </script>
 
 <template>
@@ -21,13 +23,13 @@ const data = reactive(currentData);
             </thead>
             <tbody>
                 <tr>
-                    <td>{{ data.w1 }}</td>
-                    <td>{{ data.b1 }}</td>
-                    <td>{{ data.w2 }}</td>
-                    <td>{{ data.b2 }}</td>
-                    <td>{{ data.w13 }}</td>
-                    <td>{{ data.w23 }}</td>
-                    <td>{{ data.b3 }}</td>
+                    <td>{{ currentWeightsAndRatios.w1 }}</td>
+                    <td>{{ currentWeightsAndRatios.b1 }}</td>
+                    <td>{{ currentWeightsAndRatios.w2 }}</td>
+                    <td>{{ currentWeightsAndRatios.b2 }}</td>
+                    <td>{{ currentWeightsAndRatios.w13 }}</td>
+                    <td>{{ currentWeightsAndRatios.w23 }}</td>
+                    <td>{{ currentWeightsAndRatios.b3 }}</td>
                 </tr>
             </tbody>
         </table>

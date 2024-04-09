@@ -1,8 +1,8 @@
-import { ref } from "vue";
+import { reactive, Ref, ref } from "vue";
 import { defineStore } from "pinia";
 import { sourceWeightGenerator } from "../utils/generators";
-import { calculateC1, maxValue, minValue, SignalKey } from "../utils/functions";
-import { startedData } from "@/utils/data";
+import { calculateC1, calcDeltaW1, maxValue, minValue, SignalKey } from "../utils/functions";
+import { currentData, learningSteps, startedData } from "@/utils/data";
 
 export type Signal = {
     c0: number;
@@ -114,7 +114,49 @@ function init(): TableData[] {
 }
 
 export const useNeuroStore = defineStore("NeuroStore", () => {
-    const data = ref<TableData[]>(init());
+    const initedData = ref<TableData[]>(init());
+    const startedWeightsAndRatios = reactive(startedData);
+    const currentWeightsAndRatios = ref(currentData);
 
-    return { data };
+    const calculatedData: Ref<object[]> = ref([]);
+
+    function learnModel(arr: TableData[]) {
+        for (let j = 1; j <= learningSteps; j++) {
+            const deltaW1 = calcDeltaW1(
+                arr,
+                currentWeightsAndRatios.value.w13,
+                j === 1 ? 0 : currentWeightsAndRatios.value.w1,
+            );
+            // console.log(JSON.parse(JSON.stringify(deltaW1)));
+
+            const newW1 = currentData.w1 - deltaW1;
+
+            const deltasObject = {
+                w1: currentData.w1,
+                deltaW1: deltaW1,
+                newW1: newW1,
+            };
+
+            currentWeightsAndRatios.value.w1 = newW1;
+
+            // const deltaB = deltaB3(arr, currentData.b3, deltas.b3);
+            // currentData.b3 = currentData.b3 - deltaB;
+            // deltas.b3 = deltaB;
+            // console.log(JSON.parse(JSON.stringify(currentData.b3)));
+
+            addLearningStep(deltasObject);
+        }
+    }
+
+    function addLearningStep(obj: object) {
+        calculatedData.value.push(obj);
+    }
+
+    return {
+        initedData,
+        calculatedData,
+        startedWeightsAndRatios,
+        currentWeightsAndRatios,
+        learnModel,
+    };
 });

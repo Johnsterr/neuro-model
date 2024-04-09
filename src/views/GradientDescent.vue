@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import StartedData from "@/components/StartedData.vue";
 import CurrentData from "@/components/CurrentData.vue";
+import GradientsTable from "@/components/GradientsTable.vue";
 </script>
 
 <template>
@@ -9,7 +10,7 @@ import CurrentData from "@/components/CurrentData.vue";
             <StartedData />
             <CurrentData />
         </div>
-        Gradients
+        <GradientsTable />
     </main>
 </template>
 
