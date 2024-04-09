@@ -15,16 +15,24 @@ const calculatedData = computed(() => neuroStore.calculatedData);
                     <td>Входной w1</td>
                     <td>Дельта w1</td>
                     <td>Новый w1</td>
-                    <!-- <td>Производная Y`1</td>
-                    <td>Производная Y`2</td>
-                    <td>Нормализованное C*0</td>
-                    <td>Нормализованное C*1</td>
-                    <td>Аргумент X1</td>
-                    <td>Аргумент X2</td>
-                    <td>Значение Y1</td>
-                    <td>Значение Y2</td>
-                    <td>Расчетное C1* Calc</td>
-                    <td>Расчетное C1 Calc</td> -->
+                    <td>Входной b1</td>
+                    <td>Дельта b1</td>
+                    <td>Новый b1</td>
+                    <td>Входной w2</td>
+                    <td>Дельта w2</td>
+                    <td>Новый w2</td>
+                    <td>Входной b2</td>
+                    <td>Дельта b2</td>
+                    <td>Новый b2</td>
+                    <td>Входной w13</td>
+                    <td>Дельта w13</td>
+                    <td>Новый w13</td>
+                    <td>Входной w23</td>
+                    <td>Дельта w23</td>
+                    <td>Новый w23</td>
+                    <td>Входной b3</td>
+                    <td>Дельта b3</td>
+                    <td>Новый b3</td>
                 </tr>
             </thead>
             <tbody>
@@ -33,13 +41,24 @@ const calculatedData = computed(() => neuroStore.calculatedData);
                         <td>{{ item.w1 }}</td>
                         <td>{{ item.deltaW1 }}</td>
                         <td>{{ item.newW1 }}</td>
-                        <!-- <td>{{ item.c1Normalize }}</td>
-                        <td>{{ item.x1 }}</td>
-                        <td>{{ item.x2 }}</td>
-                        <td>{{ item.y1 }}</td>
-                        <td>{{ item.y2 }}</td>
-                        <td>{{ item.c1calcNorm }}</td>
-                        <td>{{ item.c1calc }}</td> -->
+                        <td>{{ item.b1 }}</td>
+                        <td>{{ item.deltaB1 }}</td>
+                        <td>{{ item.newB1 }}</td>
+                        <td>{{ item.w2 }}</td>
+                        <td>{{ item.deltaW2 }}</td>
+                        <td>{{ item.newW2 }}</td>
+                        <td>{{ item.b2 }}</td>
+                        <td>{{ item.deltaB2 }}</td>
+                        <td>{{ item.newB2 }}</td>
+                        <td>{{ item.w13 }}</td>
+                        <td>{{ item.deltaW13 }}</td>
+                        <td>{{ item.newW13 }}</td>
+                        <td>{{ item.w23 }}</td>
+                        <td>{{ item.deltaW23 }}</td>
+                        <td>{{ item.newW23 }}</td>
+                        <td>{{ item.b3 }}</td>
+                        <td>{{ item.deltaB3 }}</td>
+                        <td>{{ item.newB3 }}</td>
                     </tr>
                 </template>
             </tbody>

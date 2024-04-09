@@ -18,7 +18,7 @@ export const currentData = {
     b3: 0.8,
 };
 
-export const learningSteps = 100;
+export const learningSteps = 500;
 
 export const learningData = {
     lr: 0.003,
