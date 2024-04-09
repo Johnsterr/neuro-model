@@ -231,6 +231,9 @@ export const useNeuroStore = defineStore("NeuroStore", () => {
             currentWeightsAndRatios.value = newWeightsAndRatios;
 
             addLearningStep(deltasObject);
+
+            // TODO:  среднеквадратичная ошибка
+            // корень (1/100 * (С1 - С1 calc) в квадрате) для каждого сигнала
         }
     }
 
