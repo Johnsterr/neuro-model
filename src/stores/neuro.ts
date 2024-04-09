@@ -2,12 +2,7 @@ import { ref } from "vue";
 import { defineStore } from "pinia";
 import { sourceWeightGenerator } from "../utils/generators";
 import { calculateC1, maxValue, minValue, SignalKey } from "../utils/functions";
-import {
-    startedData,
-    startedWeightsAndConstants1,
-    startedWeightsAndConstants2,
-    startedWeightsAndConstants3,
-} from "@/utils/data";
+import { startedData } from "@/utils/data";
 
 export type Signal = {
     c0: number;
@@ -29,46 +24,10 @@ export type CalcC = {
 };
 
 type SignalActs = Signal & Activation;
-export type Dat = Signal & Activation & CalcC;
+export type TableData = Signal & Activation & CalcC;
 
 function normalizeC(item: Signal, key: SignalKey, cMin: number, cMax: number) {
     return (item[key] - cMin) / (cMax - cMin);
-}
-
-function init(): Dat[] {
-    let signals = sourceWeightGenerator();
-    signals = calculateC1(signals);
-
-    const c0Min = minValue(signals, "c0");
-    const c0Max = maxValue(signals, "c0");
-    const c1Min = minValue(signals, "c1");
-    const c1Max = maxValue(signals, "c1");
-
-    signals = signals.map((i) => ({
-        ...i,
-        c0Normalize: normalizeC(i, "c0", c0Min, c0Max),
-        c1Normalize: normalizeC(i, "c1", c1Min, c1Max),
-    }));
-
-    const activations = calcFuncActivation(signals);
-
-    const signalActs: SignalActs[] = signals.map((item, idx) => {
-        return {
-            ...item,
-            ...activations[idx],
-        };
-    });
-
-    const parametersC = calcC(signalActs, c1Min, c1Max);
-
-    const result: Dat[] = signalActs.map((item, idx) => {
-        return {
-            ...item,
-            ...parametersC[idx],
-        };
-    });
-
-    return result;
 }
 
 function calcFuncActivation(signals: Signal[]): Activation[] {
@@ -102,7 +61,8 @@ function calcC(signals: SignalActs[], c1Min: number, c1Max: number): CalcC[] {
             c1calc: 0,
         };
 
-        obj.c1calcNorm = startedData.w13 * signals[i].y1 + startedData.w23 * signals[i].y2 + startedData.b3;
+        obj.c1calcNorm =
+            startedData.w13 * signals[i].y1 + startedData.w23 * signals[i].y2 + startedData.b3;
         obj.c1calc = obj.c1calcNorm * (c1Max - c1Min) + c1Min;
 
         ar.push(obj);
@@ -111,8 +71,50 @@ function calcC(signals: SignalActs[], c1Min: number, c1Max: number): CalcC[] {
     return ar;
 }
 
+function init(): TableData[] {
+    // вектор входных сигналов
+    let signals = sourceWeightGenerator();
+    // вектор выходных сигналов
+    signals = calculateC1(signals);
+
+    // макс и мин сигналов
+    const c0Min = minValue(signals, "c0");
+    const c0Max = maxValue(signals, "c0");
+    const c1Min = minValue(signals, "c1");
+    const c1Max = maxValue(signals, "c1");
+
+    // нормирование
+    signals = signals.map((i) => ({
+        ...i,
+        c0Normalize: normalizeC(i, "c0", c0Min, c0Max),
+        c1Normalize: normalizeC(i, "c1", c1Min, c1Max),
+    }));
+
+    // аргумент функции активации
+    const activations = calcFuncActivation(signals);
+
+    const signalActs: SignalActs[] = signals.map((item, idx) => {
+        return {
+            ...item,
+            ...activations[idx],
+        };
+    });
+
+    // расчетные значения параметра С1
+    const parametersC = calcC(signalActs, c1Min, c1Max);
+
+    const result: TableData[] = signalActs.map((item, idx) => {
+        return {
+            ...item,
+            ...parametersC[idx],
+        };
+    });
+
+    return result;
+}
+
 export const useNeuroStore = defineStore("NeuroStore", () => {
-    const data = ref<Dat[]>(init());
+    const data = ref<TableData[]>(init());
 
     return { data };
 });

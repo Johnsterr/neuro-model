@@ -1,4 +1,4 @@
-import { Dat, Signal } from "@/stores/neuro";
+import { TableData, Signal } from "@/stores/neuro";
 import { currentData, learningData, learningSteps } from "./data";
 
 const a = 3;
@@ -24,7 +24,7 @@ export function minValue(array: Signal[], key: SignalKey) {
     return Math.min(...array.map((i) => i[key]));
 }
 
-export function deltaW1(data: Dat[], w13: number, deltaW1: number) {
+export function deltaW1(data: TableData[], w13: number, deltaW1: number) {
     let sum: number = 0;
 
     data.map((item, idx) => {
@@ -42,7 +42,7 @@ export function deltaW1(data: Dat[], w13: number, deltaW1: number) {
     return result;
 }
 
-export function deltaB3(data: Dat[], b3: number, deltaB3: number) {
+export function deltaB3(data: TableData[], b3: number, deltaB3: number) {
     let sum: number = 0;
 
     data.map((item, idx) => {
@@ -58,7 +58,7 @@ const deltas = {
     b3: 0,
 };
 
-export function learnModel(arr: Dat[]) {
+export function learnModel(arr: TableData[]) {
     for (let j = 1; j <= learningSteps; j++) {
         // const deltaW = deltaW1(arr, currentData.w13, deltas.w1);
         const deltaB = deltaB3(arr, currentData.b3, deltas.b3);
