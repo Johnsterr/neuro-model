@@ -1,4 +1,4 @@
-import { reactive, Ref, ref } from "vue";
+import { reactive, Ref, ref, watch } from "vue";
 import { defineStore } from "pinia";
 import { sourceWeightGenerator } from "../utils/generators";
 import {
@@ -14,7 +14,7 @@ import {
     calcDeltaW13,
     calcDeltaW23,
 } from "../utils/functions";
-import { currentData, learningSteps, startedData } from "@/utils/data";
+import { currentData, startedData } from "@/utils/data";
 
 export type Signal = {
     c0: number;
@@ -97,8 +97,10 @@ function calcC(signals: SignalActs[], c1Min: number, c1Max: number): CalcC[] {
             c1calc: 0,
         };
 
-        obj.c1calcNorm = startedData.w13 * signals[i].y1 + startedData.w23 * signals[i].y2 + startedData.b3;
-        obj.c1calc = obj.c1calcNorm * (c1Max - c1Min) + c1Min;
+        obj.c1calcNorm = Number(
+            (startedData.w13 * signals[i].y1 + startedData.w23 * signals[i].y2 + startedData.b3).toFixed(3),
+        );
+        obj.c1calc = Number((obj.c1calcNorm * (c1Max - c1Min) + c1Min).toFixed(3));
 
         ar.push(obj);
     }
@@ -106,18 +108,16 @@ function calcC(signals: SignalActs[], c1Min: number, c1Max: number): CalcC[] {
     return ar;
 }
 
+// вектор входных сигналов
+let signals = sourceWeightGenerator();
+// вектор выходных сигналов
+signals = calculateC1(signals);
+const c0Min = minValue(signals, "c0");
+const c0Max = maxValue(signals, "c0");
+const c1Min = minValue(signals, "c1");
+const c1Max = maxValue(signals, "c1");
+
 function init(): TableData[] {
-    // вектор входных сигналов
-    let signals = sourceWeightGenerator();
-    // вектор выходных сигналов
-    signals = calculateC1(signals);
-
-    // макс и мин сигналов
-    const c0Min = minValue(signals, "c0");
-    const c0Max = maxValue(signals, "c0");
-    const c1Min = minValue(signals, "c1");
-    const c1Max = maxValue(signals, "c1");
-
     // нормирование
     signals = signals.map((i) => ({
         ...i,
@@ -152,94 +152,137 @@ export const useNeuroStore = defineStore("NeuroStore", () => {
     const initedData = ref<TableData[]>(init());
     const startedWeightsAndRatios = reactive(startedData);
     const currentWeightsAndRatios = ref(currentData);
+    const calcData = ref<TableData[]>([]);
+    const intervalFunction = ref();
+    const learningStep = ref(0);
 
     const calculatedData: Ref<DeltaObject[]> = ref([]);
 
-    function learnModel(arr: TableData[]) {
-        for (let j = 0; j < learningSteps; j++) {
-            const deltaW1 = calcDeltaW1(
-                arr,
-                currentWeightsAndRatios.value.w13,
-                j === 0 ? 0 : calculatedData.value[j - 1].deltaW1,
-            );
-            const newW1 = currentWeightsAndRatios.value.w1 - deltaW1;
+    function calculateDeltas() {
+        const deltaW1 = calcDeltaW1(
+            initedData.value,
+            currentWeightsAndRatios.value.w13,
+            learningStep.value === 0 ? 0 : calculatedData.value[learningStep.value - 1].deltaW1,
+        );
+        const newW1 = currentWeightsAndRatios.value.w1 - deltaW1;
 
-            const deltaB1 = calcDeltaB1(
-                arr,
-                currentWeightsAndRatios.value.w13,
-                j === 0 ? 0 : calculatedData.value[j - 1].deltaB1,
-            );
-            const newB1 = currentWeightsAndRatios.value.b1 - deltaB1;
+        const deltaB1 = calcDeltaB1(
+            initedData.value,
+            currentWeightsAndRatios.value.w13,
+            learningStep.value === 0 ? 0 : calculatedData.value[learningStep.value - 1].deltaB1,
+        );
+        const newB1 = currentWeightsAndRatios.value.b1 - deltaB1;
 
-            const deltaW2 = calcDeltaW2(
-                arr,
-                currentWeightsAndRatios.value.w23,
-                j === 0 ? 0 : calculatedData.value[j - 1].deltaW2,
-            );
-            const newW2 = currentWeightsAndRatios.value.w2 - deltaW2;
+        const deltaW2 = calcDeltaW2(
+            initedData.value,
+            currentWeightsAndRatios.value.w23,
+            learningStep.value === 0 ? 0 : calculatedData.value[learningStep.value - 1].deltaW2,
+        );
+        const newW2 = currentWeightsAndRatios.value.w2 - deltaW2;
 
-            const deltaB2 = calcDeltaB2(
-                arr,
-                currentWeightsAndRatios.value.w23,
-                j === 0 ? 0 : calculatedData.value[j - 1].deltaB2,
-            );
-            const newB2 = currentWeightsAndRatios.value.b2 - deltaB2;
+        const deltaB2 = calcDeltaB2(
+            initedData.value,
+            currentWeightsAndRatios.value.w23,
+            learningStep.value === 0 ? 0 : calculatedData.value[learningStep.value - 1].deltaB2,
+        );
+        const newB2 = currentWeightsAndRatios.value.b2 - deltaB2;
 
-            const deltaW13 = calcDeltaW13(arr, j === 0 ? 0 : calculatedData.value[j - 1].deltaW13);
-            const newW13 = currentWeightsAndRatios.value.w13 - deltaW13;
+        const deltaW13 = calcDeltaW13(
+            initedData.value,
+            learningStep.value === 0 ? 0 : calculatedData.value[learningStep.value - 1].deltaW13,
+        );
+        const newW13 = currentWeightsAndRatios.value.w13 - deltaW13;
 
-            const deltaW23 = calcDeltaW23(arr, j === 0 ? 0 : calculatedData.value[j - 1].deltaW23);
-            const newW23 = currentWeightsAndRatios.value.w23 - deltaW23;
+        const deltaW23 = calcDeltaW23(
+            initedData.value,
+            learningStep.value === 0 ? 0 : calculatedData.value[learningStep.value - 1].deltaW23,
+        );
+        const newW23 = currentWeightsAndRatios.value.w23 - deltaW23;
 
-            const deltaB3 = calcDeltaB3(arr, j === 0 ? 0 : calculatedData.value[j - 1].deltaB3);
-            const newB3 = currentWeightsAndRatios.value.b3 - deltaB3;
+        const deltaB3 = calcDeltaB3(
+            initedData.value,
+            learningStep.value === 0 ? 0 : calculatedData.value[learningStep.value - 1].deltaB3,
+        );
+        const newB3 = currentWeightsAndRatios.value.b3 - deltaB3;
 
-            const deltasObject: DeltaObject = {
-                w1: currentWeightsAndRatios.value.w1,
-                deltaW1: deltaW1,
-                newW1: newW1,
-                b1: currentWeightsAndRatios.value.b1,
-                deltaB1: deltaB1,
-                newB1: newB1,
-                w2: currentWeightsAndRatios.value.w2,
-                deltaW2: deltaW2,
-                newW2: newW2,
-                b2: currentWeightsAndRatios.value.b2,
-                deltaB2: deltaB2,
-                newB2: newB2,
-                w13: currentWeightsAndRatios.value.w13,
-                deltaW13: deltaW13,
-                newW13: newW13,
-                w23: currentWeightsAndRatios.value.w23,
-                deltaW23: deltaW23,
-                newW23: newW23,
-                b3: currentWeightsAndRatios.value.b3,
-                deltaB3: deltaB3,
-                newB3: newB3,
+        const deltasObject: DeltaObject = {
+            w1: currentWeightsAndRatios.value.w1,
+            deltaW1: deltaW1,
+            newW1: newW1,
+            b1: currentWeightsAndRatios.value.b1,
+            deltaB1: deltaB1,
+            newB1: newB1,
+            w2: currentWeightsAndRatios.value.w2,
+            deltaW2: deltaW2,
+            newW2: newW2,
+            b2: currentWeightsAndRatios.value.b2,
+            deltaB2: deltaB2,
+            newB2: newB2,
+            w13: currentWeightsAndRatios.value.w13,
+            deltaW13: deltaW13,
+            newW13: newW13,
+            w23: currentWeightsAndRatios.value.w23,
+            deltaW23: deltaW23,
+            newW23: newW23,
+            b3: currentWeightsAndRatios.value.b3,
+            deltaB3: deltaB3,
+            newB3: newB3,
+        };
+
+        const newWeightsAndRatios = {
+            w1: newW1,
+            b1: newB1,
+            w2: newW2,
+            b2: newB2,
+            w13: newW13,
+            w23: newW23,
+            b3: newB3,
+        };
+
+        currentWeightsAndRatios.value = newWeightsAndRatios;
+
+        addLearningStep(deltasObject);
+
+        calcData.value = initedData.value.map((item: TableData) => {
+            const x1 = Number((deltasObject.w1 * item.c0Normalize + deltasObject.b1).toFixed(3));
+            const x2 = Number((deltasObject.w2 * item.c0Normalize + deltasObject.b2).toFixed(3));
+            const y1 = Number(Math.log(1 + Math.exp(x1)).toFixed(5));
+            const y2 = Number(Math.log(1 + Math.exp(x2)).toFixed(5));
+            const c1calcNorm = Number((deltasObject.w13 * y1 + deltasObject.w23 * y2 + deltasObject.b3).toFixed(3));
+            const c1calc = Number((c1calcNorm * (c1Max - c1Min) + c1Min).toFixed(3));
+
+            return {
+                ...item,
+                x1: x1,
+                x2: x2,
+                y1: y1,
+                y2: y2,
+                c1calcNorm: c1calcNorm,
+                c1calc: c1calc,
             };
+        });
 
-            const newWeightsAndRatios = {
-                w1: newW1,
-                b1: newB1,
-                w2: newW2,
-                b2: newB2,
-                w13: newW13,
-                w23: newW23,
-                b3: newB3,
-            };
+        learningStep.value += 1;
 
-            currentWeightsAndRatios.value = newWeightsAndRatios;
+        // TODO:  среднеквадратичная ошибка
+        // корень (1/100 * (С1 - С1 calc) в квадрате) для каждого сигнала
+    }
 
-            addLearningStep(deltasObject);
+    function learnModel() {
+        intervalFunction.value = setInterval(calculateDeltas, 1500);
+    }
 
-            // TODO:  среднеквадратичная ошибка
-            // корень (1/100 * (С1 - С1 calc) в квадрате) для каждого сигнала
-        }
+    function stopLearn() {
+        clearInterval(intervalFunction.value);
     }
 
     function addLearningStep(obj: DeltaObject) {
         calculatedData.value.push(obj);
     }
+
+    watch(learningStep, () => {
+        if (learningStep.value === 100) clearInterval(intervalFunction.value);
+    });
 
     return {
         initedData,
@@ -247,5 +290,9 @@ export const useNeuroStore = defineStore("NeuroStore", () => {
         startedWeightsAndRatios,
         currentWeightsAndRatios,
         learnModel,
+        calcData,
+        learningStep,
+        intervalFunction,
+        stopLearn,
     };
 });

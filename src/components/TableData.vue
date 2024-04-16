@@ -4,7 +4,7 @@ import { useNeuroStore } from "@/stores/neuro";
 
 const neuroStore = useNeuroStore();
 
-const tableData = computed(() => neuroStore.initedData);
+const tableData = computed(() => neuroStore.calcData);
 </script>
 <template>
     <div>
