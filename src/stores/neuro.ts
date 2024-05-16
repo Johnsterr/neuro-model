@@ -97,7 +97,8 @@ function calcC(signals: SignalActs[], c1Min: number, c1Max: number): CalcC[] {
             c1calc: 0,
         };
 
-        obj.c1calcNorm = startedData.w13 * signals[i].y1 + startedData.w23 * signals[i].y2 + startedData.b3;
+        obj.c1calcNorm =
+            startedData.w13 * signals[i].y1 + startedData.w23 * signals[i].y2 + startedData.b3;
         obj.c1calc = obj.c1calcNorm * (c1Max - c1Min) + c1Min;
 
         ar.push(obj);
@@ -152,6 +153,8 @@ export const useNeuroStore = defineStore("NeuroStore", () => {
     const initedData = ref<TableData[]>(init());
     const startedWeightsAndRatios = reactive(startedData);
     const currentWeightsAndRatios = ref(currentData);
+    const currentLearnAge = ref(0);
+    const intervalId = ref();
 
     const calculatedData: Ref<DeltaObject[]> = ref([]);
 
@@ -239,6 +242,14 @@ export const useNeuroStore = defineStore("NeuroStore", () => {
 
     function addLearningStep(obj: DeltaObject) {
         calculatedData.value.push(obj);
+    }
+
+    function calculateLearnAge() {
+        if (currentLearnAge.value === 100) clearInterval(intervalId.value);
+    }
+
+    function incrementLearnAge() {
+        currentLearnAge.value = currentLearnAge.value + 1;
     }
 
     return {
