@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { RouterView } from "vue-router";
+import {RouterView} from "vue-router";
 import TheHeader from "@/components/TheHeader.vue";
-import NeuralNetwork from "@/components/NeuralNetwork.vue";
+import Neuro from "@/components/Neuro.vue";
 </script>
 
 <template>
-    <NeuralNetwork />
-    <!-- <TheHeader />
+  <Neuro />
+  <!-- <TheHeader />
     <RouterView /> -->
 </template>
