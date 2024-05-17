@@ -1,9 +1,25 @@
 <template>
   <div>
-    <h1>Neural Network Training</h1>
-    <div id="chart"></div>
-    <div id="loss-chart"></div>
-    <button @click="trainModel">Train Model</button>
+    <h1>Построение модели нейронной сети</h1>
+    <button @click="trainModel">Обучение модели</button>
+    <div id="charts">
+      <div id="loss-chart"></div>
+      <div id="chart"></div>
+      <div id="chart-100"></div>
+      <div id="chart-500"></div>
+      <div id="chart-700"></div>
+      <div id="chart-1000"></div>
+      <div id="chart-1500"></div>
+      <div id="chart-2000"></div>
+      <div id="chart-2800"></div>
+      <div id="chart-3500"></div>
+      <div id="chart-4400"></div>
+      <div id="chart-6000"></div>
+      <div id="chart-8000"></div>
+      <div id="chart-10000"></div>
+      <div id="chart-20000"></div>
+      <div id="chart-30000"></div>
+    </div>
   </div>
 </template>
 
@@ -28,23 +44,35 @@ export default {
       learningRate: 0.005,
       momentum: 0.8,
       losses: [],
+      epochCount: 30000,
+      updateEpochs: [
+        100, 500, 700, 1000, 1500, 2000, 2800, 3500, 4400, 6000, 8000, 10000,
+        20000, 30000,
+      ], // Эпохи для обновления графиков
     };
   },
   mounted() {
     this.calculateReferenceFunction();
-    this.drawChart();
+    this.initializeCharts();
   },
   methods: {
     calculateReferenceFunction() {
       this.C1 = this.C0.map((x) => this.a * Math.sqrt(x));
     },
-    drawChart() {
+    initializeCharts() {
+      this.drawChart("#chart", "Текущая эпоха");
+      this.updateEpochs.forEach((epoch) => {
+        this.drawChart(`#chart-${epoch}`, `Эпоха ${epoch}`);
+      });
+      this.drawLossChart();
+    },
+    drawChart(container, title) {
       const margin = {top: 20, right: 30, bottom: 40, left: 40},
         width = 600 - margin.left - margin.right,
         height = 400 - margin.top - margin.bottom;
 
       const svg = d3
-        .select("#chart")
+        .select(container)
         .append("svg")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
@@ -68,8 +96,8 @@ export default {
         .append("path")
         .datum(this.C1)
         .attr("fill", "none")
-        .attr("stroke", "green")
-        .attr("stroke-width", 1.5)
+        .attr("stroke", "orange")
+        .attr("stroke-width", 2)
         .attr(
           "d",
           d3
@@ -77,6 +105,15 @@ export default {
             .x((d, i) => this.x(this.C0[i]))
             .y((d) => this.y(d))
         );
+
+      svg
+        .append("text")
+        .attr("x", width / 2)
+        .attr("y", margin.top)
+        .attr("text-anchor", "middle")
+        .style("font-size", "16px")
+        .style("text-decoration", "underline")
+        .text(title);
     },
     drawLossChart() {
       const margin = {top: 20, right: 30, bottom: 40, left: 50},
@@ -151,7 +188,7 @@ export default {
       const xs = tf.tensor2d(C0_scaled, [C0_scaled.length, 1]);
       const ys = tf.tensor2d(C1_scaled, [C1_scaled.length, 1]);
 
-      for (let epoch = 0; epoch < 10000; epoch++) {
+      for (let epoch = 0; epoch < this.epochCount; epoch++) {
         const history = await model.fit(xs, ys, {
           epochs: 1,
         });
@@ -175,15 +212,17 @@ export default {
           );
         }
 
-        if ((epoch + 1) % 500 === 0) {
+        if (this.updateEpochs.includes(epoch + 1)) {
           console.log(`Epoch ${epoch + 1}: loss = ${history.history.loss[0]}`);
-          this.updateChart(model, xs);
+          this.updateChart(model, xs, `#chart-${epoch + 1}`);
           this.updateLossChart();
         }
+
+        this.updateChart(model, xs, `#chart`);
       }
 
       console.log("Finish");
-      this.updateChart(model, xs);
+      this.updateChart(model, xs, `#chart-10000`);
       this.updateLossChart();
     },
     normalize(array) {
@@ -195,14 +234,14 @@ export default {
     denormalize(array, min, max) {
       return array.map((value) => value * (max - min) + min);
     },
-    async updateChart(model, xs) {
+    async updateChart(model, xs, container) {
       const preds = await model.predict(xs).data();
       const predsArray = Array.from(preds);
       this.predictions = this.denormalize(predsArray, this.C1_min, this.C1_max);
 
-      d3.select("#chart").selectAll(".pred-line").remove();
+      d3.select(container).selectAll(".pred-line").remove();
 
-      const svg = d3.select("#chart").select("svg").select("g");
+      const svg = d3.select(container).select("svg").select("g");
 
       svg
         .append("path")
@@ -224,7 +263,12 @@ export default {
 </script>
 
 <style>
-#chart,
+#charts {
+  padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
 #loss-chart {
   margin-top: 20px;
 }
