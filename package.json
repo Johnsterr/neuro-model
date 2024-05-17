@@ -9,6 +9,7 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "@tensorflow/tfjs": "^4.19.0",
         "d3": "^7.9.0",
         "normalize-scss": "^8.0.0",
         "pinia": "^2.1.7",

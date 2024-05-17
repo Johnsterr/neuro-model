@@ -6,16 +6,19 @@ import { useNeuroStore } from "@/stores/neuro";
 
 const neuroStore = useNeuroStore();
 
-const tableData = computed(() => neuroStore.initedData);
-
 function gen() {
-    neuroStore.learnModel(tableData.value);
+    neuroStore.learnModel();
+}
+
+function stop() {
+    neuroStore.stopLearn();
 }
 </script>
 
 <template>
     <main>
         <button @click="gen">click</button>
+        <button @click="stop">stop</button>
         <StartedData />
         <TableData />
     </main>
