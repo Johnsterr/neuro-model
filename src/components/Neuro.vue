@@ -222,7 +222,7 @@ export default {
       }
 
       console.log("Finish");
-      this.updateChart(model, xs, `#chart-10000`);
+      this.updateChart(model, xs, `#chart-30000`);
       this.updateLossChart();
     },
     normalize(array) {
